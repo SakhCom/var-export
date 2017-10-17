@@ -52,7 +52,7 @@ class VarExport
             case 'double':
                 return $ref;
             case 'string':
-                return "'" . $ref . "'";
+                return "'" . $this->escapeString($ref) . "'";
             case 'resource':
             case 'NULL':
                 return 'NULL';
@@ -121,6 +121,17 @@ class VarExport
             $this->exportRef($value, $maxDepth, $indent + 1) .
             ',' .
             PHP_EOL;
+    }
+
+    /**
+     * @param string $string
+     * @return string
+     */
+    private function escapeString($string)
+    {
+        $string = str_replace('\\', '\\\\', $string);
+        $string = preg_replace("#(?!=\\\)'#", '\\\'', $string);
+        return $string;
     }
 
     /**

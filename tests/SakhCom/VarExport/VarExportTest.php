@@ -30,56 +30,57 @@ class VarExportTest extends TestCase
     public function simpleDataProvider()
     {
         return [
-            'simple string'         => ['test string'],
-            'true'                  => [true],
-            'false'                 => [false],
-            'integer'               => [100],
-            'float'                 => [2.154],
-            'resource'              => [STDOUT],
-            'array'                 => [
+            'simple string'             => ['test string'],
+            'string with special chars' => ['"\"\'\some' . "\n\\strin'\"g"],
+            'true'                      => [true],
+            'false'                     => [false],
+            'integer'                   => [100],
+            'float'                     => [2.154],
+            'resource'                  => [STDOUT],
+            'array'                     => [
                 [1, 2, 3]
             ],
-            'multiple array'        => [
+            'multiple array'            => [
                 [
                     [1, 2, 3],
                     [4, 5, 6]
                 ],
             ],
-            'nested array'          => [
+            'nested array'              => [
                 1,
                 [
                     2,
                     3
                 ]
             ],
-            'hash table'            => [
+            'hash table'                => [
                 'key'         => 'value',
                 'another key' => [
                     'nested key' => false
                 ],
             ],
-            'array with mixed keys' => [
+            'array with mixed keys'     => [
                 0   => 123,
                 '2' => 456
             ],
-            'generator'             => [
+            'generator'                 => [
                 [
                     (function () {
                         yield 1;
                     })()
                 ]
             ],
-            'closure'               => [
+            'closure'                   => [
                 [
                     function () {
                         return 1;
                     }
                 ]
             ],
-            'simple object'         => [
+            'simple object'             => [
                 (object)['key' => 'value']
             ],
-            'object with array'     => [
+            'object with array'         => [
                 (object)[
                     'key' => [
                         1,
