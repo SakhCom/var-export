@@ -3,12 +3,12 @@ build:
         php:
             version: 7.1
     dependencies:
-            before:
-              - composer install
+        before:
+            - 'composer install'
     tests:
-        override:
+        before:
             -
-                command: phpunit --verbose -c ./phpunit.xml.dist
+                command: vendor/bin/phpunit --verbose -c ./phpunit.xml.dist
                 coverage:
                     file: clover.xml
-                    format: php-clover
+                    format: clover
