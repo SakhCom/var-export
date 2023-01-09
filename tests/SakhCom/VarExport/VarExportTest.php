@@ -191,13 +191,13 @@ EXPECTED;
         ];
 
         $expected = <<<EXPECTED
-stdClass::__set_state(array(
+(object) array(
    'ref' => 
   array (
     'a' => 
     array (...),
   ),
-))
+)
 EXPECTED;
 
         $this->assertEquals($expected, (new VarExport($value))->export(2));
@@ -211,13 +211,13 @@ EXPECTED;
         $b->a = $a;
 
         $expected = <<<EXPECTED
-stdClass::__set_state(array(
+(object) array(
    'b' => 
-  stdClass::__set_state(array(
+  (object) array(
      'a' => 
-    stdClass::__set_state(array(...)),
-  )),
-))
+    (object) array(...),
+  ),
+)
 EXPECTED;
 
         $this->assertEquals($expected, (new VarExport($a))->export(2));

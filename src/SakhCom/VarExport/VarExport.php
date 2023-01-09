@@ -2,6 +2,9 @@
 
 namespace SakhCom\VarExport;
 
+use ReflectionClass;
+use ReflectionProperty;
+
 /**
  * Class VarExport
  *
@@ -10,14 +13,14 @@ namespace SakhCom\VarExport;
 class VarExport
 {
 
-    private $variable;
+    private mixed $variable;
 
     /**
      * VarExport constructor.
      *
      * @param mixed $variable
      */
-    public function __construct($variable)
+    public function __construct(mixed $variable)
     {
         $this->variable = $variable;
     }
@@ -28,7 +31,7 @@ class VarExport
      * @param int $maxDepth maximum depth
      * @return string
      */
-    public function export($maxDepth = -1)
+    public function export(int $maxDepth = -1): string
     {
         return $this->exportRef($this->variable, $maxDepth === -1 ? -1 : $maxDepth + 1);
     }
@@ -39,7 +42,7 @@ class VarExport
      * @param int $indent
      * @return string
      */
-    private function exportRef($ref, $maxDepth, $indent = 0)
+    private function exportRef(mixed $ref, int $maxDepth, int $indent = 0): string
     {
         if ($maxDepth !== -1) {
             $maxDepth--;
@@ -81,15 +84,27 @@ class VarExport
                 if ($indent > 0) {
                     $output .= PHP_EOL . $baseIndentString;
                 }
-                $output .= get_class($ref) . '::__set_state(array(';
+                $class = get_class($ref);
+                if ($class === 'stdClass') {
+                    $output .= '(object) array(';
+                    $closeBracket = ')';
+                } else {
+                    if (PHP_VERSION_ID >= 80200 && !str_contains($class, '\\')) {
+                        // since PHP 8.2 var_export should add root namespace
+                        // for root classes, e.g. Closure
+                        $output .= '\\';
+                    }
+                    $output .= $class . '::__set_state(array(';
+                    $closeBracket = '))';
+                }
                 if ($maxDepth === -1 || $maxDepth > 0) {
                     $output .= PHP_EOL;
-                    $reflection = new \ReflectionClass($ref);
+                    $reflection = new ReflectionClass($ref);
                     foreach (get_object_vars($ref) as $key => $value) {
                         $output .= $indentString . $this->exportElement($key, $value, $maxDepth, $indent);
                     }
 
-                    foreach ($reflection->getProperties(\ReflectionProperty::IS_PRIVATE | \ReflectionProperty::IS_PROTECTED) as $property) {
+                    foreach ($reflection->getProperties(ReflectionProperty::IS_PRIVATE | ReflectionProperty::IS_PROTECTED) as $property) {
                         $key = $property->getName();
                         $property->setAccessible(true);
                         $value = $property->getValue($ref);
@@ -97,9 +112,9 @@ class VarExport
                         $property->setAccessible(false);
                     }
 
-                    $output .= $baseIndentString . '))';
+                    $output .= $baseIndentString . $closeBracket;
                 } else {
-                    $output .= '...))';
+                    $output .= '...' . $closeBracket;
                 }
                 return $output;
             default:
@@ -114,7 +129,7 @@ class VarExport
      * @param $indent
      * @return string
      */
-    private function exportElement($key, $value, $maxDepth, $indent)
+    private function exportElement($key, $value, $maxDepth, $indent): string
     {
         return $this->exportRef($key, $maxDepth, $indent + 1) .
             ' => ' .
@@ -127,20 +142,14 @@ class VarExport
      * @param string $string
      * @return string
      */
-    private function escapeString($string)
+    private function escapeString(string $string): string
     {
         $string = str_replace('\\', '\\\\', $string);
-        $string = preg_replace("#(?!=\\\)'#", '\\\'', $string);
-        return $string;
+        return preg_replace("#(?!=\\\)'#", '\\\'', $string);
     }
 
-    /**
-     * {@inheritdoc}
-     *
-     * @return string
-     */
     public function __toString()
     {
-        return (string)$this->export();
+        return $this->export();
     }
 }
